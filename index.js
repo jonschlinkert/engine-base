@@ -85,6 +85,9 @@ function compile(str, options, cb) {
   if (typeof options === 'function') {
     return compile(str, {}, options);
   }
+  if (typeof cb !== 'function') {
+    return compileSync(str, options);
+  }
   try {
     cb(null, compileSync(str, options));
   } catch (err) {
@@ -163,7 +166,9 @@ function render(str, locals, cb) {
   if (typeof locals === 'function') {
     return render(str, {}, locals);
   }
-
+  if (typeof cb !== 'function') {
+    return renderSync(str, options);
+  }
   try {
     cb(null, renderSync(str, locals));
   } catch (err) {
