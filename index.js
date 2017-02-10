@@ -23,7 +23,7 @@ engine.Engine = utils.Engine;
 
 engine.options = {
   name: 'base',
-  dest: {ext: '.html'},
+  dest: {ext: '.html'}
 };
 
 /**
@@ -57,6 +57,9 @@ function compileSync(str, locals) {
     if (locals.debugEngine === true) {
       inspectHelpers(settings, opts);
     }
+
+    delete settings.imports.with;
+    delete settings.imports.if;
 
     var base = new utils.Engine(settings);
     return base.compile(str, settings);
@@ -167,7 +170,7 @@ function render(str, locals, cb) {
     return render(str, {}, locals);
   }
   if (typeof cb !== 'function') {
-    return renderSync(str, options);
+    return renderSync(str, locals);
   }
   try {
     cb(null, renderSync(str, locals));
@@ -229,24 +232,6 @@ function inspectHelpers(settings, opts) {
     }
   }
 }
-
-// function normalizeOptions(options) {
-//   locals = locals || {};
-//   locals.settings = locals.settings || {};
-
-//   var settings = {};
-//   var picked = utils.merge(pick(locals), pick(locals.settings));
-//   var delims = picked.delims;
-//   var opts = picked.opts;
-//   var fns = picked.fns;
-
-//   settings.imports = utils.merge({}, fns.helpers, fns.imports);
-//   settings = utils.merge({}, settings, delims);
-
-//   if (locals.debugEngine === true) {
-//     inspectHelpers(settings, opts);
-//   }
-// }
 
 /**
  * Conflict report displayed when the same key exists as both
