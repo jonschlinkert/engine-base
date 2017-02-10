@@ -1,18 +1,22 @@
 'use strict';
 
-/**
- * Module dependencies.
- */
-
-var lazy = module.exports = require('lazy-cache')(require);
+var utils = require('lazy-cache')(require);
+var fn = require;
+require = utils;
 
 /**
  * Lazily required module dependencies
  */
 
-lazy('object.omit', 'omit');
-lazy('object.pick', 'pick');
-lazy('mixin-deep', 'merge');
-lazy('engine-utils', 'utils');
-lazy('delimiter-regex', 'delims');
-lazy('engine', 'Engine');
+require('delimiter-regex', 'delims');
+require('engine', 'Engine');
+require('mixin-deep', 'merge');
+require('object.omit', 'omit');
+require('object.pick', 'pick');
+require = fn;
+
+/**
+ * Expose `utils` modules
+ */
+
+module.exports = utils;
