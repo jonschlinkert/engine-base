@@ -1,149 +1,83 @@
-# engine-base [![NPM version](https://badge.fury.io/js/engine-base.svg)](http://badge.fury.io/js/engine-base)
+# engine-base [![NPM version](https://img.shields.io/npm/v/engine-base.svg?style=flat)](https://www.npmjs.com/package/engine-base) [![NPM monthly downloads](https://img.shields.io/npm/dm/engine-base.svg?style=flat)](https://npmjs.org/package/engine-base) [![NPM total downloads](https://img.shields.io/npm/dt/engine-base.svg?style=flat)](https://npmjs.org/package/engine-base) [![Linux Build Status](https://img.shields.io/travis/jonschlinkert/engine-base.svg?style=flat&label=Travis)](https://travis-ci.org/jonschlinkert/engine-base)
 
-> Default engine for Template.
+> Default engine for jonschlinkert/templates.
+
+Please consider following this project's author, [Jon Schlinkert](https://github.com/jonschlinkert), and consider starring the project to show your :heart: and support.
 
 ## Install
 
-Install with [npm](https://www.npmjs.com/)
+Install with [npm](https://www.npmjs.com/):
 
 ```sh
-$ npm i engine-base --save
+$ npm install --save engine-base
 ```
 
 ## Usage
 
 ```js
-var engine = require('engine-base');
+const engine = require('engine-base')(require('engine'));
+const Templates = require('templates');
+const app = new Templates();
+
+// register with file extension(s) to associate with the engine
+app.engine('.md', engine);
+app.engine(['.md', '.html'], engine);
+app.engine('*', engine);
 ```
 
-## API
+## About
 
-### [compileSync](index.js#L44)
+<details>
+<summary><strong>Contributing</strong></summary>
 
-Return a compiled function from the given template `string` and `options`.
+Pull requests and stars are always welcome. For bugs and feature requests, [please create an issue](../../issues/new).
 
-**Params**
+</details>
 
-* `str` **{String}**: Template string to compile.
-* `options` **{Object}**: Options or settings to pass to base
-* `returns` **{Function}**
+<details>
+<summary><strong>Running Tests</strong></summary>
 
-**Example**
-
-```js
-var engine = require('engine-base');
-var fn = engine.compileSync('<%= name %>');
-console.log(fn({name: 'Halle'})); //=> 'Halle'
-```
-
-### [compile](index.js#L84)
-
-Return a compiled function from the given template `string` and `options` can `callback`
-
-**Params**
-
-* `str` **{String}**: Template string to compile.
-* `options` **{Object}**: Options or settings to pass to engine.
-* `cb` **{Function}**: Callback function
-
-**Example**
-
-```js
-var engine = require('engine-base');
-engine.compile('<%= name %>', function (err, fn) {
-  console.log(fn({name: 'Halle'})); //=> 'Halle'
-});
-```
-
-### [renderSync](index.js#L113)
-
-Render templates synchronously.
-
-**Params**
-
-* `str` **{Object}**: The string to render.
-* `options` **{Object}**: Object of options.
-* `returns` **{String}**: Rendered string.
-
-**Example**
-
-```js
-var engine = require('engine-base');
-engine.renderSync('<%= name %>', {name: 'Halle'});
-//=> 'Halle'
-```
-
-### [render](index.js#L162)
-
-String support. Render the given `str` and invoke the callback `callback(err, str)`.
-
-**Params**
-
-* `str` **{String}**
-* `locals` **{Object|Function}**: or callback.
-* `callback` **{Function}**
-
-**Example**
-
-```js
-var engine = require('engine-base');
-engine.render('<%= name %>', {name: 'Jon'}, function (err, content) {
-  console.log(content); //=> 'Jon'
-});
-```
-
-### [renderFile](index.js#L190)
-
-File support. Render a file at the given `filepath` and callback `callback(err, str)`.
-
-**Params**
-
-* `path` **{String}**
-* `options` **{Object|Function}**: or callback function.
-* `callback` **{Function}**
-
-**Example**
-
-```js
-var engine = require('engine-base');
-engine.renderFile('foo/bar/baz.tmpl', {name: 'Halle'});
-//=> 'Halle'
-```
-
-## Related projects
-
-* [engine-cache](https://www.npmjs.com/package/engine-cache): express.js inspired template-engine manager. | [homepage](https://github.com/jonschlinkert/engine-cache)
-* [engine-handlebars](https://www.npmjs.com/package/engine-handlebars): Handlebars engine, consolidate.js style but with enhancements. This works with Assemble, express.js, engine-cache or any… [more](https://www.npmjs.com/package/engine-handlebars) | [homepage](https://github.com/jonschlinkert/engine-handlebars)
-* [engine-less](https://www.npmjs.com/package/engine-less): Consolidate-style engine for rendering .less files. | [homepage](https://github.com/jonschlinkert/engine-less)
-* [engine-lodash](https://www.npmjs.com/package/engine-lodash): Lo-Dash engine, consolidate.js style but with enhancements. Works with Assemble, express.js, engine-cache or any application… [more](https://www.npmjs.com/package/engine-lodash) | [homepage](https://github.com/jonschlinkert/engine-lodash)
-* [helper-cache](https://www.npmjs.com/package/helper-cache): Easily register and get helper functions to be passed to any template engine or node.js… [more](https://www.npmjs.com/package/helper-cache) | [homepage](https://github.com/jonschlinkert/helper-cache)
-* [template](https://www.npmjs.com/package/template): Render templates using any engine. Supports, layouts, pages, partials and custom template types. Use template… [more](https://www.npmjs.com/package/template) | [homepage](https://github.com/jonschlinkert/template)
-* [template-helpers](https://www.npmjs.com/package/template-helpers): Generic JavaScript helpers that can be used with any template engine. Handlebars, Lo-Dash, Underscore, or… [more](https://www.npmjs.com/package/template-helpers) | [homepage](https://github.com/jonschlinkert/template-helpers)
-
-## Running tests
-
-Install dev dependencies:
+Running and reviewing unit tests is a great way to get familiarized with a library and its API. You can install dependencies and run tests with the following command:
 
 ```sh
-$ npm i -d && npm test
+$ npm install && npm test
 ```
 
-## Contributing
+</details>
 
-Pull requests and stars are always welcome. For bugs and feature requests, [please create an issue](https://github.com/jonschlinkert/engine-base/issues/new).
+<details>
+<summary><strong>Building docs</strong></summary>
 
-## Author
+_(This project's readme.md is generated by [verb](https://github.com/verbose/verb-generate-readme), please don't edit the readme directly. Any changes to the readme must be made in the [.verb.md](.verb.md) readme template.)_
+
+To generate the readme, run the following command:
+
+```sh
+$ npm install -g verbose/verb#dev verb-generate-readme && verb
+```
+
+</details>
+
+### Related projects
+
+You might also be interested in these projects:
+
+* [engine](https://www.npmjs.com/package/engine): Template engine based on Lo-Dash template, but adds features like the ability to register helpers… [more](https://github.com/jonschlinkert/engine) | [homepage](https://github.com/jonschlinkert/engine "Template engine based on Lo-Dash template, but adds features like the ability to register helpers and more easily set data to be used as context in templates.")
+* [templates](https://www.npmjs.com/package/templates): System for creating and managing template collections, and rendering templates with any node.js template engine… [more](https://github.com/jonschlinkert/templates) | [homepage](https://github.com/jonschlinkert/templates "System for creating and managing template collections, and rendering templates with any node.js template engine. Can be used as the basis for creating a static site generator or blog framework.")
+
+### Author
 
 **Jon Schlinkert**
 
-+ [github/jonschlinkert](https://github.com/jonschlinkert)
-+ [twitter/jonschlinkert](http://twitter.com/jonschlinkert)
+* [GitHub Profile](https://github.com/jonschlinkert)
+* [Twitter Profile](https://twitter.com/jonschlinkert)
+* [LinkedIn Profile](https://linkedin.com/in/jonschlinkert)
 
-## License
+### License
 
-Copyright © 2015 Jon Schlinkert
-Released under the MIT license.
+Copyright © 2018, [Jon Schlinkert](https://github.com/jonschlinkert).
+Released under the [MIT License](LICENSE).
 
 ***
 
-_This file was generated by [verb-cli](https://github.com/assemble/verb-cli) on September 08, 2015._
+_This file was generated by [verb-generate-readme](https://github.com/verbose/verb-generate-readme), v0.8.0, on November 11, 2018._

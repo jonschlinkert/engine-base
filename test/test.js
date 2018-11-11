@@ -1,185 +1,114 @@
 'use strict';
 
-var fs = require('fs');
-var path = require('path');
-var assert = require('assert');
-var engine = require('..');
 require('mocha');
+const fs = require('fs');
+const path = require('path');
+const assert = require('assert');
+const Engine = require('engine');
+const create = require('..');
+let engine;
 
+const options = {
+  interpolate: /{%=([\s\S]+?)%}/g,
+  escape: /{%-([\s\S]+?)%}/g,
+  evaluate: /{%([\s\S]+?)%}/g
+};
 
-describe('.compileSync()', function () {
-  it('should compile templates.', function () {
-    var fn = engine.compileSync('Jon <%= name %>');
-    assert(typeof fn === 'function');
-    assert(fn({name: 'Schlinkert'}) === 'Jon Schlinkert');
+describe('engine-base', () => {
+  beforeEach(() => {
+    engine = create(new Engine());
   });
 
-  it('should use custom delimiters.', function () {
-    var fn = engine.compileSync('Jon <%= name %> {%= name %}', {
-      delims: ['{%', '%}']
+  describe('.compileSync()', () => {
+    it('should compile templates.', () => {
+      let {fn} = engine.compileSync('Jon <%= name %>');
+      assert.equal(typeof fn, 'function');
+      assert.equal(fn({ name: 'Schlinkert' }), 'Jon Schlinkert');
     });
-    assert(typeof fn === 'function');
-    assert(fn({name: 'Schlinkert'}) === 'Jon <%= name %> Schlinkert');
-  });
 
-  it('should emit an error event when conflicting data is found.', function () {
-    var ctx = {
-      name: 'Jon Schlinkert',
-      foo: 'bar',
-      imports: {
-        foo: function () {}
-      }
-    };
-    ctx.debugEngine = true;
-    engine.on('error', function (err) {
-      assert(err.id === 'helper-conflict');
+    it('should use custom delimiters.', () => {
+      let {fn} = engine.compileSync('Jon <%= name %> {%= name %}', { ...options });
+      assert.equal(typeof fn, 'function');
+      assert.equal(fn({ name: 'Schlinkert' }), 'Jon <%= name %> Schlinkert');
     });
-    engine.compileSync('<%= name %>', ctx);
   });
-});
 
-describe('.compile()', function () {
-  it('should compile templates.', function (done) {
-    engine.compile('Jon <%= name %>', function (err, fn) {
-      if (err) return done(err);
-      assert(typeof fn === 'function');
-      assert(fn({
+  describe('.compile()', () => {
+    it('should compile templates.', async() => {
+      let {fn} = await engine.compile('Jon <%= name %>');
+      assert.equal(typeof fn, 'function');
+      assert.equal(fn({name: 'Schlinkert'}), 'Jon Schlinkert');
+    });
+
+    it('should use custom delimiters.',async () => {
+      let str = 'Jon <%= name %> {%= name %}';
+      let {fn} = await engine.compile(str, options);
+      assert.equal(typeof fn, 'function');
+      assert.equal(fn({name: 'Schlinkert'}), 'Jon <%= name %> Schlinkert');
+    });
+  });
+
+  describe('.renderSync()', () => {
+    it('should render templates.', () => {
+      let file = engine.renderSync('Jon <%= name %>', { name: 'Schlinkert' });
+      assert.equal(file.contents.toString(), 'Jon Schlinkert');
+    });
+
+    it('should use custom delimiters.', () => {
+      let file = engine.renderSync('Jon <%= name %> {%= name %}', {
         name: 'Schlinkert'
-      }) === 'Jon Schlinkert');
-      done();
+      }, options);
+
+      assert.equal(file.contents.toString(), 'Jon <%= name %> Schlinkert');
     });
   });
 
-  it('should use custom delimiters.', function (done) {
-    var settings = {
-      delims: ['{%', '%}']
-    };
-    var str = 'Jon <%= name %> {%= name %}';
-    engine.compile(str, settings, function (err, fn) {
-      if (err) return done(err);
-      assert(typeof fn === 'function');
-      assert(fn({
-        name: 'Schlinkert'
-      }) === 'Jon <%= name %> Schlinkert');
-      done();
+  describe('.render()', () => {
+    it('should render templates.', async () => {
+      let ctx = { name: 'Jon Schlinkert' };
+      let file = await engine.render('<%= name %>', ctx);
+      assert.equal(file.contents.toString(), 'Jon Schlinkert');
     });
-  });
-});
 
-describe('.renderSync()', function () {
-  it('should render templates.', function () {
-    var str = engine.renderSync('Jon <%= name %>', {
-      name: 'Schlinkert'
+    it('should use custom delimiters: swig.', async () => {
+      let ctx = { name: 'Jon Schlinkert' };
+      let file = await engine.render('{%= name %}', ctx, options);
+      assert.equal(file.contents.toString(), 'Jon Schlinkert');
     });
-    assert(str === 'Jon Schlinkert');
-  });
 
-  it('should use custom delimiters.', function () {
-    var str = engine.renderSync('Jon <%= name %> {%= name %}', {
-      delims: ['{%', '%}'],
-      name: 'Schlinkert'
+    it('should use custom delimiters: hbs.', async () => {
+      let ctx = { name: 'Jon Schlinkert' };
+      let file = await engine.render('{%= name %}', ctx, options);
+      assert.equal(file.contents.toString(), 'Jon Schlinkert');
     });
-    assert(str === 'Jon <%= name %> Schlinkert');
-  });
-});
 
-describe('.render()', function () {
-  it('should render templates.', function (done) {
-    var ctx = {name: 'Jon Schlinkert'};
-
-    engine.render('<%= name %>', ctx, function (err, content) {
-      assert(content === 'Jon Schlinkert');
-      done();
-    });
-  });
-
-  it('should use custom delimiters: swig.', function (done) {
-    var ctx = {name: 'Jon Schlinkert', delims: ['{%', '%}']};
-
-    engine.render('{%= name %}', ctx, function (err, content) {
-      assert(content === 'Jon Schlinkert');
-      done();
-    });
-  });
-
-  it('should use custom delimiters: hbs.', function (done) {
-    var ctx = {name: 'Jon Schlinkert', delims: ['{{', '}}']};
-
-    engine.render('{{= name }}', ctx, function (err, content) {
-      assert(content === 'Jon Schlinkert');
-      done();
-    });
-  });
-
-  it('should use helpers registered on the imports property.', function (done) {
-    var ctx = {
-      name: 'Jon Schlinkert',
-      imports: {
-        include: function (name) {
-          var filepath = path.join('test/fixtures', name);
-          return fs.readFileSync(filepath, 'utf8');
-        },
-        upper: function (str) {
-          return str.toUpperCase();
+    it('should use helpers registered on the imports property.', async () => {
+      let ctx = {
+        name: 'Jon Schlinkert',
+        imports: {
+          include(name) {
+            let filepath = path.join('test/fixtures', name);
+            return fs.readFileSync(filepath, 'utf8');
+          },
+          upper(str) {
+            return str.toUpperCase();
+          }
         }
-      }
-    };
+      };
 
-    engine.render('<%= upper(include("content.tmpl")) %>', ctx, function (err, content) {
-      assert(content === 'JON SCHLINKERT');
-      done();
+      let file = await engine.render('<%= upper(include("content.tmpl")) %>', ctx);
+      assert.equal(file.contents.toString(), 'JON SCHLINKERT');
     });
-  });
 
-  it('should emit an error when conflicting data is found.', function (done) {
-    var ctx = {
-      name: 'Jon Schlinkert',
-      foo: 'bar',
-      imports: {
-        foo: function () {}
-      }
-    };
-    ctx.debugEngine = true;
-    engine.on('error', function (err) {
-      assert(err.id === 'helper-conflict');
-      done();
-    });
-    engine.render('<%= name %>', ctx, function (err, content) {
-      assert(content === 'Jon Schlinkert');
-    });
-  });
-
-  it('should handle errors.', function (done) {
-    engine.render('<%= name %>', function (err, content) {
-      assert(err.message === 'name is not defined');
-      done();
+    it('should handle errors.', async () => {
+      return engine.render('<%= name %>')
+        .then(() => {
+          return Promise.reject(new Error('expected an error'));
+        })
+        .catch(err => {
+          assert.equal(err.message, 'name is not defined')
+        })
     });
   });
 });
 
-describe('.renderFile()', function () {
-  it('should render templates from a file.', function (done) {
-    var ctx = {
-      name: 'Jon Schlinkert'
-    };
-
-    engine.renderFile('test/fixtures/default.tmpl', ctx, function (err, content) {
-      assert(content === 'Jon Schlinkert');
-      done();
-    });
-  });
-
-  it('should work when no context is passed.', function (done) {
-    engine.renderFile('test/fixtures/nothing.tmpl', function (err, content) {
-      assert(content === 'empty');
-      done();
-    });
-  });
-
-  it('should handle errors.', function (done) {
-    engine.renderFile('test/fixtures/default.tmpl', function (err, content) {
-      assert(err.message === 'name is not defined');
-      done();
-    });
-  });
-});
